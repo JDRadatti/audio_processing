@@ -50,7 +50,6 @@ int main () {
       if (!out_stream.empty()) {
           transPkt output = out_stream.read();
           fprintf(fp, "%d\n", (int)output.data);
-          printf("%3d out=%d\n", i, (int)output.data);
           if (output.last) { break; }
       } else {
           printf("Warning: output stream empty at sample %d\n", i);
