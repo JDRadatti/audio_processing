@@ -25,14 +25,14 @@ void fir(hls::stream<transPkt> &in_stream, hls::stream<transPkt> &out_stream) {
         transPkt in_pkt = in_stream.read();
 
         TDL:
-        for (int i = N - 1; i > 0; i--) {
+        for (i = N - 1; i > 0; i--) {
             shift_reg[i] = shift_reg[i - 1];
         }
         shift_reg[0] = in_pkt.data;
 
         MAC:
         acc = 0;
-        for (int i = 0; i < N; i++) {
+        for (i = 0; i < N; i++) {
             acc += shift_reg[i] * coeffs[i];
         }
 
