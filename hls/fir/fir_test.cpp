@@ -27,7 +27,6 @@ int main () {
   // Feed all input samples into the stream
   for (int i = 0; i < SAMPLES; i++) {
       int tmp;
-      fscanf(fin, "%d", &tmp);
       if (fscanf(fin, "%d", &tmp) != 1) {
           printf("ERROR: unexpected EOF in input.dat\n");
           fclose(fin);
