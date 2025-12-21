@@ -11,45 +11,34 @@
 #include "fir.h"
 #include "fir_coeffs.h"
 
-void fir(hls::stream<transPkt> &in_stream, hls::stream<transPkt> &out_stream) {
+void fir(hls::stream<data_t> &in_stream, hls::stream<data_t> &out_stream) {
 
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
+#pragma HLS INTERFACE s_axilite port=return bundle=CTRL
 
     static
 		data_t shift_reg[N];
 		acc_t acc;
 		int i;
 
-    while (!in_stream.empty()) {
-        transPkt in_pkt = in_stream.read();
+    data_t x = in_stream.read();
 
-        TDL:
-        for (i = N - 1; i > 0; i--) {
-            shift_reg[i] = shift_reg[i - 1];
-        }
-        shift_reg[0] = in_pkt.data;
-
-        MAC:
-        acc = 0;
-        for (i = 0; i < N; i++) {
-            acc += shift_reg[i] * coeffs[i];
-        }
-
-        // Normalize output to 24 bits
-        data_t y = (data_t)(acc >> 10);
-
-        // Prepare output packet
-        transPkt out_pkt;
-        out_pkt.data = y;
-        out_pkt.keep = in_pkt.keep;
-        out_pkt.strb = in_pkt.strb;
-        out_pkt.last = in_pkt.last;
-
-        // Send result
-        out_stream.write(out_pkt);
-
-        if (in_pkt.last)
-            break;
+    TDL:
+    for (i = N - 1; i > 0; i--) {
+        shift_reg[i] = shift_reg[i - 1];
     }
+    shift_reg[0] = x;
+
+    MAC:
+    acc = 0;
+    for (i = 0; i < N; i++) {
+        acc += shift_reg[i] * coeffs[i];
+    }
+
+    // Normalize output to 24 bits
+    data_t y = (data_t)(acc >> 10);
+
+    out_stream.write(y);
+
 }
