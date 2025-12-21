@@ -1,7 +1,7 @@
 /*
-	Filename: fir_test.h
+	Filename: fir_test.cpp
 		Testbench file
-		Calls fir() function from fir.cpp
+		Calls fir() function from fir.cpp repeatedly
 		Compares the output from fir() with out.gold.dat
 */
 
@@ -11,20 +11,20 @@
 #include "hls_stream.h"
 
 int main () {
-  const int    SAMPLES=600;
-  FILE         *fp, *fin;
+  const int SAMPLES = 600;
+  FILE *fp, *fin;
 
-  hls::stream<transPkt> in_stream;
-  hls::stream<transPkt> out_stream;
+  hls::stream<data_t> in_stream;
+  hls::stream<data_t> out_stream;
 
   fin = fopen("input.dat", "r");
   fp  = fopen("out.dat", "w");
   if (!fin || !fp) {
-      printf("ERROR: Cannot open input/output file. You may need to run gen_fir_data.py. \n");
+      printf("ERROR: Cannot open input/output file.\n");
       return 1;
   }
 
-  // Feed all input samples into the stream
+  // Process each input sample
   for (int i = 0; i < SAMPLES; i++) {
       int tmp;
       if (fscanf(fin, "%d", &tmp) != 1) {
@@ -34,12 +34,16 @@ int main () {
           return 1;
       }
 
-      transPkt pkt;
-      pkt.data = tmp;
-      pkt.keep = 0xFF;
-      pkt.strb = 0xFF;
-      pkt.last = (i == SAMPLES - 1) ? 1 : 0;
-      in_stream.write(pkt);
+      // Write input sample
+      in_stream.write((data_t)tmp);
+
+      // Call FIR filter once per sample
+      fir(in_stream, out_stream);
+
+      // Read output sample
+      data_t output = out_stream.read();
+      fprintf(fp, "%d\n", (int)output);
+      printf("%3d out=%d\n", i, (int)output);
   }
 
   // Run the FIR Filter
@@ -57,8 +61,8 @@ int main () {
       }
   }
 
-  fclose(fp);
   fclose(fin);
+  fclose(fp);
 
   // Compare results with golden output
   printf("Comparing against golden output...\n");
@@ -73,5 +77,4 @@ int main () {
       fprintf(stdout, "*******************************************\n");
       return 0;
   }
-
 }
