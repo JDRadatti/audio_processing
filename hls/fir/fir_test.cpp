@@ -46,21 +46,6 @@ int main () {
       printf("%3d out=%d\n", i, (int)output);
   }
 
-  // Run the FIR Filter
-  fir(in_stream, out_stream);
-
-  // Retrieve results from output stream
-  for (int i = 0; i < SAMPLES; i++) {
-      if (!out_stream.empty()) {
-          transPkt output = out_stream.read();
-          fprintf(fp, "%d\n", (int)output.data);
-          if (output.last) { break; }
-      } else {
-          printf("Warning: output stream empty at sample %d\n", i);
-          break;
-      }
-  }
-
   fclose(fin);
   fclose(fp);
 
